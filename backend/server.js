@@ -2,6 +2,8 @@
 const cors = require('cors');
 const helmet = require('helmet');
 require('dotenv').config();
+const pool = require('./config/db');
+const authRoutes = require('./routes/auth.routes');
 
 const app = express();
 
@@ -9,6 +11,7 @@ const app = express();
 app.use(helmet());
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
+app.use('/api/auth', authRoutes);
 
 // Test route
 app.get('/api/health', (req, res) => {
