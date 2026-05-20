@@ -5,6 +5,8 @@ require('dotenv').config();
 const pool = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
 const appointmentRoutes = require('./routes/appointment.routes');
+const slotRoutes = require('./routes/slot.routes');
+const serviceRoutes = require('./routes/service.routes');
 
 const app = express();
 
@@ -14,6 +16,8 @@ app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/slots', slotRoutes);
+app.use('/api/services', serviceRoutes);
 
 // Test route
 app.get('/api/health', (req, res) => {
