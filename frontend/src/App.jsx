@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import PatientDashboard from './pages/PatientDashboard';
 
 function App() {
   return (
@@ -11,7 +12,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={
           <ProtectedRoute>
-            <div>Dashboard - wkrótce!</div>
+            <PatientDashboard />
           </ProtectedRoute>
         } />
       </Routes>
