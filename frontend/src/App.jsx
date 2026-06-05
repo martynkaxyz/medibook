@@ -6,6 +6,7 @@ import PatientDashboard from './pages/PatientDashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
 import AdminPanel from './pages/AdminPanel';
 import NotFound from './pages/NotFound';
+import BookingPage from './pages/BookingPage';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
             <AdminPanel />
           </ProtectedRoute>
         } />
+        <Route path="/booking" element={<BookingPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
