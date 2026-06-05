@@ -145,7 +145,7 @@ export default function PatientDashboard() {
             <p className="text-sm text-white/70">Sprawdź dostępne terminy w kalendarzu</p>
           </div>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/booking')}
             className="bg-white text-[#2A9D8F] text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-gray-50 transition"
           >
             Zarezerwuj teraz
@@ -219,7 +219,7 @@ export default function PatientDashboard() {
                     </span>
                   </div>
                   <button
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate('/booking')}
                     className="text-xs bg-[#2A9D8F] text-white px-3 py-1.5 rounded-lg hover:bg-[#1A7A6E] transition"
                   >
                     Umów ponownie
