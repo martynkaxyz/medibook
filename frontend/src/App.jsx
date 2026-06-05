@@ -3,6 +3,9 @@ import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import PatientDashboard from './pages/PatientDashboard';
+import DoctorDashboard from './pages/DoctorDashboard';
+import AdminPanel from './pages/AdminPanel';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -15,6 +18,17 @@ function App() {
             <PatientDashboard />
           </ProtectedRoute>
         } />
+        <Route path="/doctor" element={
+          <ProtectedRoute>
+            <DoctorDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin" element={
+          <ProtectedRoute>
+            <AdminPanel />
+          </ProtectedRoute>
+        } />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
