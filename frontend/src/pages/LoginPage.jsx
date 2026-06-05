@@ -159,11 +159,6 @@ export default function LoginPage() {
 
             <div>
               <Field name="password" label="Hasło" type="password" form={form} setForm={setForm} errors={errors} />
-              {tab === 'login' && (
-                <div className="flex justify-end mt-2">
-                  <a href="#" className="text-xs text-[#2A9D8F] hover:underline">Nie pamiętasz hasła?</a>
-                </div>
-              )}
             </div>
 
             {tab === 'register' && (
