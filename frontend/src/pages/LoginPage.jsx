@@ -58,7 +58,10 @@ export default function LoginPage() {
       const res = await api.post(endpoint, payload);
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
-      navigate('/dashboard');
+      const role = res.data.user.role;
+      if (role === 'admin') navigate('/admin');
+      else if (role === 'doctor') navigate('/doctor');
+      else navigate('/dashboard');
     } catch (err) {
       setApiError(err.response?.data?.error || 'Wystąpił błąd');
     } finally {
