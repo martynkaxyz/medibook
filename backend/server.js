@@ -19,6 +19,9 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/slots', slotRoutes);
 app.use('/api/services', serviceRoutes);
 
+const adminRoutes = require('./routes/admin.routes');
+app.use('/api/admin', adminRoutes);
+
 // Test route
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'MediBook API dziala!' });
