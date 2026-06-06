@@ -1,5 +1,9 @@
-# MediBook 
+# MediBook 🏥
 System rezerwacji wizyt lekarskich online
+
+## Demo
+- **Frontend:** https://medibook-amber.vercel.app
+- **Backend API:** https://medibook-production-c1ec.up.railway.app/api/health
 
 ## Stos technologiczny
 - Frontend: React 18 + Vite + Tailwind CSS
@@ -73,7 +77,3 @@ Otwórz: http://localhost:5173
 | Admin | admin@medibook.pl | Admin123! |
 | Lekarz | nela.wysocka@medibook.pl | Doctor123! |
 | Pacjent | maja.lewandowska@gmail.com | Patient123! |
-
-## Autorzy
-- Martyna Dębek 
-- Agnieszka Gołębiowska 
