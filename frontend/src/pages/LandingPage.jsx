@@ -51,7 +51,7 @@ export default function LandingPage() {
       `}</style>
 
       {/* NAVBAR */}
-      <nav className="w-full flex items-center justify-between px-16 py-4 bg-white border-b border-gray-100 sticky top-0 z-50">
+      <nav className="w-full flex items-center justify-between px-6 md:px-16 py-4 bg-white border-b border-gray-100 sticky top-0 z-50">
         <span className="text-xl font-bold tracking-tight text-gray-900">
           Medi<span className="text-[#2A9D8F]">Book</span>
         </span>
@@ -66,34 +66,34 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO */}
-      <section className="w-full px-16 py-24 bg-white flex items-center justify-between gap-16">
-        <div className="max-w-xl">
-          <span className="inline-block text-xs font-bold bg-[#2A9D8F]/10 text-[#2A9D8F] px-3 py-1.5 rounded-full mb-6 tracking-widest uppercase">
+      <section className="w-full px-6 md:px-16 py-10 bg-white flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="w-full md:max-w-xl">
+          <span className="inline-block text-xs font-bold bg-[#2A9D8F]/10 text-[#2A9D8F] px-3 py-1.5 rounded-full mb-4 tracking-widest uppercase">
             Gabinet dr Neli Wysockiej
           </span>
-          <h1 className="text-6xl font-bold leading-[1.1] mb-6 tracking-tight text-gray-900">
+          <h1 className="text-3xl md:text-6xl font-bold leading-[1.1] mb-4 tracking-tight text-gray-900">
             Zdrowie na<br />
             <span className="text-[#2A9D8F]">wyciągnięcie</span><br />
             ręki
           </h1>
-          <p className="text-lg text-gray-500 mb-10 leading-relaxed">
+          <p className="text-base md:text-lg text-gray-500 mb-8 leading-relaxed">
             Zarezerwuj wizytę online w kilka sekund.<br />
             Bez kolejek, bez czekania na linii.
           </p>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button onClick={() => {
               const token = localStorage.getItem('token');
               token ? navigate('/booking') : navigate('/login');
             }}
-              className="bg-[#2A9D8F] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#1A7A6E] transition text-base">
+              className="bg-[#2A9D8F] text-white font-bold px-6 py-3 rounded-2xl hover:bg-[#1A7A6E] transition text-sm md:text-base">
               Zarezerwuj wizytę
             </button>
             <button onClick={() => navigate('/login')}
-              className="border border-gray-200 text-gray-600 font-semibold px-8 py-4 rounded-2xl hover:border-[#2A9D8F] hover:text-[#2A9D8F] transition text-base">
+              className="border border-gray-200 text-gray-600 font-semibold px-6 py-3 rounded-2xl hover:border-[#2A9D8F] hover:text-[#2A9D8F] transition text-sm md:text-base">
               Zaloguj się
             </button>
           </div>
-          <div className="flex gap-8 mt-10 text-sm text-gray-400">
+          <div className="flex flex-wrap gap-4 mt-8 text-sm text-gray-400">
             <span className="flex items-center gap-2">
               <span className="w-5 h-5 rounded-full bg-[#2A9D8F]/10 text-[#2A9D8F] flex items-center justify-center text-xs font-bold">✓</span>
               Potwierdzenie w 60 sekund
