@@ -13,7 +13,7 @@ const odmienMiesiac = (m) => ({
   'Wrzesień':'września','Październik':'października','Listopad':'listopada','Grudzień':'grudnia'
 })[m] || m;
 
-const DOCTOR_ID = 1;
+const DOCTOR_ID = 2;
 
 export default function BookingPage() {
   const navigate = useNavigate();
