@@ -12,9 +12,7 @@ const app = express();
 
 // Middleware
 app.use(helmet());
-app.use(cors({ 
-  origin: ['http://localhost:5173', 'https://medibook-amber.vercel.app'],
-}));
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/appointments', appointmentRoutes);
