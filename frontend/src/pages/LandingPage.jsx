@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 
+const DOCTOR_ID = 4;
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const cardsRef = useRef([]);
