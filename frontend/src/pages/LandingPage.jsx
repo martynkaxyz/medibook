@@ -81,7 +81,10 @@ export default function LandingPage() {
             Bez kolejek, bez czekania na linii.
           </p>
           <div className="flex gap-4">
-            <button onClick={() => navigate('/booking')}
+            <button onClick={() => {
+              const token = localStorage.getItem('token');
+              token ? navigate('/booking') : navigate('/login');
+            }}
               className="bg-[#2A9D8F] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#1A7A6E] transition text-base">
               Zarezerwuj wizytę
             </button>
@@ -186,7 +189,10 @@ export default function LandingPage() {
           <h2 className="text-4xl font-bold mb-4">Gotowy na zdrowie<br />bez kolejek?</h2>
           <p className="text-white/70 mb-10 text-lg">Dołącz do setek pacjentów którzy już korzystają z MediBook</p>
           <div className="flex gap-4 justify-center">
-            <button onClick={() => navigate('/booking')}
+            <button onClick={() => {
+              const token = localStorage.getItem('token');
+              token ? navigate('/booking') : navigate('/login');
+            }}
               className="bg-white text-[#2A9D8F] font-bold px-10 py-4 rounded-2xl hover:bg-gray-50 transition text-base">
               Zarezerwuj teraz - to nic nie kosztuje
             </button>
