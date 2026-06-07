@@ -48,7 +48,9 @@ export default function PatientDashboard() {
     }
   };
 
-  const upcoming = appointments.filter(a => ['pending', 'confirmed'].includes(a.status));
+  const upcoming = appointments
+  .filter(a => ['pending', 'confirmed'].includes(a.status))
+  .sort((a, b) => new Date(a.slot_date) - new Date(b.slot_date));
   const history = appointments.filter(a => ['cancelled', 'completed'].includes(a.status));
 
   const statusLabel = {
@@ -116,9 +118,13 @@ export default function PatientDashboard() {
 
       {/* SIDEBAR */}
       <aside className="w-56 bg-white border-r border-gray-100 flex flex-col py-8 px-4 fixed h-full">
-        <span className="text-xl font-bold mb-8 px-2">
+        <span className="text-xl font-bold mb-4 px-2">
           Medi<span className="text-[#2A9D8F]">Book</span>
         </span>
+        <button onClick={() => navigate('/')} 
+          className="text-xs text-gray-400 hover:text-[#2A9D8F] transition px-2 mb-4 text-left">
+          ← Strona główna
+        </button>
         <div className="flex items-center gap-3 mb-8 px-2">
           <div className="w-10 h-10 rounded-full bg-[#2A9D8F] text-white flex items-center justify-center font-bold text-sm">
             {user.first_name?.[0]}{user.last_name?.[0]}
@@ -161,9 +167,9 @@ export default function PatientDashboard() {
             </div>
             <div className="grid grid-cols-3 gap-4 mb-8">
               {[
-                { label: 'Nadchodzące', value: upcoming.length, sub: 'wizyty w tym miesiącu', badge: 'aktywne', badgeColor: 'bg-green-100 text-green-700' },
+                { label: 'Nadchodzące', value: upcoming.length, sub: 'wizyty', badge: 'aktywne', badgeColor: 'bg-green-100 text-green-700' },
                 { label: 'Wszystkich wizyt', value: appointments.length, sub: 'od rejestracji', badge: 'historyczne', badgeColor: 'bg-blue-100 text-blue-700' },
-                { label: 'Następna wizyta', value: upcoming.length > 0 ? formatDate(upcoming[0].slot_date) : '-', sub: 'dni do wizyty', badge: 'wkrótce', badgeColor: 'bg-orange-100 text-orange-700' },
+                { label: 'Następna wizyta', value: upcoming.length > 0 ? formatDate(upcoming[0].slot_date) : '-', sub: 'najbliższy termin', badge: 'wkrótce', badgeColor: 'bg-orange-100 text-orange-700' },
               ].map(({ label, value, sub, badge, badgeColor }, i) => (
                 <div key={label} ref={el => cardsRef.current[i] = el}
                   className="card-animate hover-lift bg-white rounded-2xl p-5 shadow-sm border border-gray-100">

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -24,6 +24,17 @@ const Field = ({ name, label, type = 'text', form, setForm, errors }) => (
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (token) {
+      if (user.role === 'admin') navigate('/admin');
+      else if (user.role === 'doctor') navigate('/doctor');
+      else navigate('/dashboard');
+    }
+  }, []);
+
   const [tab, setTab] = useState('login');
   const [form, setForm] = useState({ email: '', password: '', first_name: '', last_name: '', confirmPassword: '' });
   const [errors, setErrors] = useState({});
