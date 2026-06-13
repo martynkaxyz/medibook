@@ -22,9 +22,6 @@ export default function PatientDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [cancelError, setCancelError] = useState('');
 
-  // Filtry wizyt
-  const [filterStatus, setFilterStatus] = useState('');
-  const [filterMonth, setFilterMonth] = useState('');
 
   // Profil – edycja
   const [profileForm, setProfileForm] = useState({ first_name: user.first_name || '', last_name: user.last_name || '' });
@@ -126,24 +123,6 @@ export default function PatientDashboard() {
     .sort((a, b) => new Date(a.slot_date) - new Date(b.slot_date));
   const history = appointments.filter(a => ['cancelled', 'completed'].includes(a.status));
 
-  const handleClear = () => {
-    setFilterStatus('');
-    setFilterMonth('');
-  };
-
-  const getSlotMonth = (slot_date) => {
-    if (!slot_date) return '';
-    const d = new Date(slot_date);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-  };
-
-  const applyFilters = (list) => {
-    return list.filter(a => {
-      const matchStatus = !filterStatus || a.status === filterStatus;
-      const matchMonth = !filterMonth || getSlotMonth(a.slot_date) === filterMonth;
-      return matchStatus && matchMonth;
-    });
-  };
 
   const statusLabel = {
     pending:   { text: 'Oczekująca',  color: 'bg-yellow-100 text-yellow-700' },
@@ -345,30 +324,9 @@ export default function PatientDashboard() {
                 <p className="text-sm text-gray-400 mt-1">Nadchodzące i aktywne rezerwacje</p>
               </div>
 
-              {/* FILTRY */}
-              <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mb-6 flex flex-col sm:flex-row gap-3 items-start sm:items-end">
-                <div className="flex-1 min-w-0">
-                  <label className="text-xs text-gray-400 mb-1 block">Status</label>
-                  <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#2A9D8F]">
-                    <option value="">Wszystkie statusy</option>
-                    <option value="pending">Oczekująca</option>
-                    <option value="confirmed">Potwierdzona</option>
-                    <option value="cancelled">Odwołana</option>
-                    <option value="completed">Odbyta</option>
-                  </select>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <label className="text-xs text-gray-400 mb-1 block">Miesiąc</label>
-                  <input type="month" value={filterMonth} onChange={e => setFilterMonth(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#2A9D8F]" />
-                </div>
-                <button onClick={handleClear}
-                  className="text-sm text-gray-400 border border-gray-200 px-4 py-2 rounded-xl hover:border-gray-300 transition whitespace-nowrap">
-                  Wyczyść
-                </button>
+              <div className="flex justify-end mb-4">
                 <button onClick={() => navigate('/booking')}
-                  className="bg-[#2A9D8F] text-white text-sm font-semibold px-5 py-2 rounded-xl hover:bg-[#1A7A6E] transition whitespace-nowrap">
+                  className="bg-[#2A9D8F] text-white text-sm font-semibold px-5 py-2 rounded-xl hover:bg-[#1A7A6E] transition">
                   + Nowa wizyta
                 </button>
               </div>
@@ -377,11 +335,10 @@ export default function PatientDashboard() {
                 <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-2xl mb-4">{cancelError}</div>
               )}
 
-{loading ? <p className="text-sm text-gray-400">Ładowanie...</p> : (() => {
-                const filtered = applyFilters(appointments);
-                return filtered.length === 0 ? (
+              {loading ? <p className="text-sm text-gray-400">Ładowanie...</p> :
+                upcoming.length === 0 ? (
                   <div className="bg-white rounded-2xl p-8 border border-dashed border-gray-200 text-center text-sm text-gray-400">
-                    <p className="mb-4">Brak wizyt spełniających kryteria</p>
+                    <p className="mb-4">Brak nadchodzących wizyt</p>
                     <button onClick={() => navigate('/booking')}
                       className="bg-[#2A9D8F] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[#1A7A6E] transition">
                       Zarezerwuj wizytę
@@ -389,12 +346,11 @@ export default function PatientDashboard() {
                   </div>
                 ) : (
                   <div className="flex flex-col gap-3">
-                    {filtered.map((a, i) => (
+                    {upcoming.map((a, i) => (
                       <AppointmentCard key={a.id} a={a} i={i} showCancel refIndex={i} />
                     ))}
                   </div>
-                );
-              })()}
+                )}
             </>
           )}
 
@@ -406,42 +362,17 @@ export default function PatientDashboard() {
                 <p className="text-sm text-gray-400 mt-1">Poprzednie i odwołane wizyty</p>
               </div>
 
-              {/* FILTRY */}
-              <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mb-6 flex flex-col sm:flex-row gap-3 items-start sm:items-end">
-                <div className="flex-1 min-w-0">
-                  <label className="text-xs text-gray-400 mb-1 block">Status</label>
-                  <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#2A9D8F]">
-                    <option value="">Wszystkie</option>
-                    <option value="cancelled">Odwołane</option>
-                    <option value="completed">Odbyte</option>
-                  </select>
+              {history.length === 0 ? (
+                <div className="bg-white rounded-2xl p-8 border border-dashed border-gray-200 text-center text-sm text-gray-400">
+                  Brak historii wizyt
                 </div>
-                <div className="flex-1 min-w-0">
-                  <label className="text-xs text-gray-400 mb-1 block">Miesiąc</label>
-                  <input type="month" value={filterMonth} onChange={e => setFilterMonth(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#2A9D8F]" />
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {history.map((a, i) => (
+                    <AppointmentCard key={a.id} a={a} i={i} showRebook refIndex={i} />
+                  ))}
                 </div>
-                <button onClick={handleClear}
-                  className="text-sm text-gray-400 border border-gray-200 px-4 py-2 rounded-xl hover:border-gray-300 transition whitespace-nowrap">
-                  Wyczyść
-                </button>
-              </div>
-
-              {(() => {
-                const filtered = applyFilters(history);
-                return filtered.length === 0 ? (
-                  <div className="bg-white rounded-2xl p-8 border border-dashed border-gray-200 text-center text-sm text-gray-400">
-                    Brak historii wizyt
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-3">
-                    {filtered.map((a, i) => (
-                      <AppointmentCard key={a.id} a={a} i={i} showRebook refIndex={i} />
-                    ))}
-                  </div>
-                );
-              })()}
+              )}
             </>
           )}
 
