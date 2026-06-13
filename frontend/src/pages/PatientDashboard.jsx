@@ -389,11 +389,9 @@ export default function PatientDashboard() {
               )}
 
               {/* DEBUG - usunac po naprawieniu */}
-              {appliedMonth && upcoming.length > 0 && (
-                <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs px-4 py-2 rounded-xl mb-4 font-mono">
-                  szukam: <b>{appliedMonth}</b> | slot_date[0]: <b>{String(upcoming[0]?.slot_date)}</b> | computed: <b>{String(upcoming[0]?.slot_date).substring(0,7)}</b>
-                </div>
-              )}
+              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs px-4 py-2 rounded-xl mb-4 font-mono">
+                DEBUG | appointments: <b>{appointments.length}</b> | upcoming: <b>{upcoming.length}</b> | appliedMonth: <b>"{appliedMonth}"</b> | slot_date[0]: <b>{String(appointments[0]?.slot_date)}</b>
+              </div>
 
               {loading ? <p className="text-sm text-gray-400">Ładowanie...</p> : (() => {
                 const filtered = applyFilters(upcoming);
