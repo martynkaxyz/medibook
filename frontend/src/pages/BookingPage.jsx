@@ -13,31 +13,34 @@ const odmienMiesiac = (m) => ({
   'Wrzesień':'września','Październik':'października','Listopad':'listopada','Grudzień':'grudnia'
 })[m] || m;
 
-const DOCTOR_ID = 4;
-
 export default function BookingPage() {
   const navigate = useNavigate();
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 5, 1));
+  const [currentDate, setCurrentDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
   const [availableDates, setAvailableDates] = useState([]);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [services, setServices] = useState([]);
+  const [doctor, setDoctor] = useState(null);
   const [booking, setBooking] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookingError, setBookingError] = useState('');
   const [step, setStep] = useState(1);
 
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
 
   useEffect(() => {
-    api.get('/services').then(res => setServices(res.data));
+    api.get('/services').then(res => setServices(res.data)).catch(console.error);
+    api.get('/doctors').then(res => {
+      if (res.data.length > 0) setDoctor(res.data[0]);
+    }).catch(console.error);
   }, []);
 
   useEffect(() => {
-    fetchAvailableDates();
-  }, [currentDate]);
+    if (doctor) fetchAvailableDates();
+  }, [currentDate, doctor]);
 
   const fetchAvailableDates = async () => {
     try {
@@ -47,7 +50,7 @@ export default function BookingPage() {
       const promises = Array.from({ length: daysInMonth }, (_, i) => {
         const day = String(i + 1).padStart(2, '0');
         const date = `${year}-${String(month + 1).padStart(2, '0')}-${day}`;
-        return api.get(`/slots?doctorId=${DOCTOR_ID}&date=${date}`);
+        return api.get(`/slots?doctorId=${doctor.id}&date=${date}`);
       });
       const results = await Promise.all(promises);
       const days = [];
@@ -61,7 +64,7 @@ export default function BookingPage() {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
       const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const res = await api.get(`/slots?doctorId=${DOCTOR_ID}&date=${date}`);
+      const res = await api.get(`/slots?doctorId=${doctor.id}&date=${date}`);
       setAvailableSlots(res.data);
       setSelectedSlot(null);
     } catch (err) { console.error(err); }
@@ -77,14 +80,19 @@ export default function BookingPage() {
     if (!token) { navigate('/login'); return; }
     if (!selectedSlot || !selectedService) return;
     setBooking(true);
+    setBookingError('');
     try {
       await api.post('/appointments', {
         slotId: selectedSlot.id,
         serviceId: selectedService.id,
       });
       setBookingSuccess(true);
-    } catch (err) { console.error(err); }
-    finally { setBooking(false); }
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Wystąpił błąd podczas rezerwacji. Spróbuj ponownie.';
+      setBookingError(msg);
+    } finally {
+      setBooking(false);
+    }
   };
 
   const { daysInMonth, monthOffset } = useMemo(() => {
@@ -93,6 +101,10 @@ export default function BookingPage() {
     const offset = firstDay === 0 ? 6 : firstDay - 1;
     return { daysInMonth: days, monthOffset: offset };
   }, [currentYear, currentMonth]);
+
+  const doctorLabel = doctor
+    ? `dr ${doctor.first_name} ${doctor.last_name} · ${doctor.specialty}`
+    : 'Ładowanie...';
 
   if (bookingSuccess) {
     return (
@@ -103,7 +115,7 @@ export default function BookingPage() {
           <p className="text-gray-400 text-sm mb-2">
             {selectedService?.name} · {selectedDay} {odmienMiesiac(MONTHS_LABELS[currentMonth])} · {selectedSlot?.start_time?.slice(0,5)}
           </p>
-          <p className="text-gray-400 text-sm mb-8">dr Nela Wysocka · Medycyna ogólna</p>
+          <p className="text-gray-400 text-sm mb-8">{doctorLabel}</p>
           <div className="flex gap-3 justify-center">
             <button onClick={() => navigate('/dashboard')}
               className="bg-[#2A9D8F] text-white px-6 py-3 rounded-2xl font-semibold text-sm hover:bg-[#1A7A6E] transition">
@@ -133,7 +145,7 @@ export default function BookingPage() {
       <div className="max-w-5xl mx-auto px-8 py-12">
         <div className="mb-10">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Zarezerwuj wizytę</h1>
-          <p className="text-gray-400">Gabinet dr Neli Wysockiej · Medycyna ogólna</p>
+          <p className="text-gray-400">Gabinet {doctorLabel}</p>
         </div>
 
         {/* STEPS */}
@@ -220,7 +232,7 @@ export default function BookingPage() {
                     {availableSlots.map(slot => {
                       const isSel = selectedSlot?.id === slot.id;
                       return (
-                        <button key={slot.id} onClick={() => setSelectedSlot(slot)}
+                        <button key={slot.id} onClick={() => { setSelectedSlot(slot); setBookingError(''); }}
                           className={`py-3 rounded-xl text-sm font-bold border-2 transition
                             ${isSel ? 'bg-[#2A9D8F] text-white border-[#2A9D8F]' : 'border-gray-200 text-gray-700 hover:border-[#2A9D8F] hover:text-[#2A9D8F]'}`}>
                           {slot.start_time?.slice(0,5)}
@@ -229,11 +241,16 @@ export default function BookingPage() {
                     })}
                   </div>
                   {selectedSlot && (
-                    <div className="bg-[#2A9D8F]/5 border border-[#2A9D8F]/20 rounded-2xl p-5 mb-6">
+                    <div className="bg-[#2A9D8F]/5 border border-[#2A9D8F]/20 rounded-2xl p-5 mb-4">
                       <p className="text-sm font-semibold text-gray-900 mb-1">Podsumowanie</p>
                       <p className="text-xs text-gray-500">{selectedService?.name}</p>
                       <p className="text-xs text-gray-500">{selectedDay} {odmienMiesiac(MONTHS_LABELS[currentMonth])} · {selectedSlot.start_time?.slice(0,5)}</p>
-                      <p className="text-xs text-gray-500">dr Nela Wysocka · {selectedService?.duration_minutes} min</p>
+                      <p className="text-xs text-gray-500">{doctorLabel} · {selectedService?.duration_minutes} min</p>
+                    </div>
+                  )}
+                  {bookingError && (
+                    <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-2xl mb-4">
+                      {bookingError}
                     </div>
                   )}
                   <button onClick={handleBooking} disabled={!selectedSlot || booking}

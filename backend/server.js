@@ -7,17 +7,22 @@ const authRoutes = require('./routes/auth.routes');
 const appointmentRoutes = require('./routes/appointment.routes');
 const slotRoutes = require('./routes/slot.routes');
 const serviceRoutes = require('./routes/service.routes');
+const doctorRoutes = require('./routes/doctor.routes');
 
 const app = express();
 
-// Middleware
+const allowedOrigins = process.env.ALLOWED_ORIGIN
+  ? process.env.ALLOWED_ORIGIN.split(',').map(o => o.trim())
+  : ['http://localhost:5173'];
+
 app.use(helmet());
-app.use(cors({ origin: '*' }));
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/slots', slotRoutes);
 app.use('/api/services', serviceRoutes);
+app.use('/api/doctors', doctorRoutes);
 
 const adminRoutes = require('./routes/admin.routes');
 app.use('/api/admin', adminRoutes);

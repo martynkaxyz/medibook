@@ -96,4 +96,21 @@ const cancel = async (appointmentId, patientId) => {
   }
 };
 
-module.exports = { getByPatient, create, cancel };
+// Pobierz wizyty pacjentów dla zalogowanego lekarza
+const getByDoctor = async (doctorUserId) => {
+  const result = await pool.query(
+    `SELECT a.*, ts.slot_date, ts.start_time, ts.end_time,
+            u.first_name AS patient_first_name, u.last_name AS patient_last_name,
+            u.email AS patient_email
+     FROM appointments a
+     JOIN time_slots ts ON a.slot_id = ts.id
+     JOIN doctors d ON ts.doctor_id = d.id
+     JOIN users u ON a.patient_id = u.id
+     WHERE d.user_id = $1
+     ORDER BY ts.slot_date DESC, ts.start_time DESC`,
+    [doctorUserId]
+  );
+  return result.rows;
+};
+
+module.exports = { getByPatient, getByDoctor, create, cancel };

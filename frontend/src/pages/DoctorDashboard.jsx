@@ -10,9 +10,9 @@ export default function DoctorDashboard() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('pulpit');
-  const [activeFilter, setActiveFilter] = useState('all');
   const [showAddSlot, setShowAddSlot] = useState(false);
   const [newSlot, setNewSlot] = useState({ slotDate: '', startTime: '', endTime: '' });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const cardsRef = useRef([]);
 
   useEffect(() => { fetchData(); }, []);
@@ -30,23 +30,18 @@ export default function DoctorDashboard() {
     );
     cardsRef.current.forEach(card => card && observer.observe(card));
     return () => observer.disconnect();
-  }, [appointments, activeTab]);
+  }, [appointments, slots, activeTab]);
 
   const fetchData = async () => {
     try {
-      const [slotRes, serviceRes] = await Promise.all([
+      const [slotRes, serviceRes, apptRes] = await Promise.all([
         api.get('/slots/my'),
         api.get('/services'),
+        api.get('/appointments/doctor'),
       ]);
       setSlots(slotRes.data);
       setServices(serviceRes.data);
-      
-      // Pobierz wszystkie wizyty przez admin endpoint lub przez sloty
-      try {
-        const apptRes = await api.get('/admin/stats');
-        // Użyj danych ze slotów żeby znaleźć rezerwacje
-      } catch {}
-      
+      setAppointments(apptRes.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -67,12 +62,12 @@ export default function DoctorDashboard() {
   };
 
   const deleteSlot = async (id) => {
-	try {
-		await api.delete(`/slots/${id}`);
-		fetchData();
-	} catch (err) {
-		console.error(err);
-	}
+    try {
+      await api.delete(`/slots/${id}`);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const today = new Date().toISOString().split('T')[0];
@@ -102,17 +97,28 @@ export default function DoctorDashboard() {
         .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(42,157,143,0.12); }
       `}</style>
 
+      {/* Overlay mobilny */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/40 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* SIDEBAR */}
-      <aside className="w-56 bg-[#1A2E25] text-white flex flex-col py-8 px-4 fixed h-full">
-        <span className="text-xl font-bold mb-8 px-2">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-56 bg-[#1A2E25] text-white flex flex-col py-8 px-4
+        transform transition-transform duration-300
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+        <span className="text-xl font-bold mb-4 px-2">
           Medi<span className="text-[#2A9D8F]">Book</span>
         </span>
+        <button onClick={() => navigate('/')}
+          className="text-xs text-white/40 hover:text-[#2A9D8F] transition px-2 mb-4 text-left">
+          ← Strona główna
+        </button>
         <div className="flex items-center gap-3 mb-8 px-2">
-          <div className="w-10 h-10 rounded-full bg-[#2A9D8F] text-white flex items-center justify-center font-bold text-sm">
+          <div className="w-10 h-10 rounded-full bg-[#2A9D8F] text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
             {user.first_name?.[0]}{user.last_name?.[0]}
           </div>
-          <div>
-            <p className="text-sm font-semibold">{user.first_name} {user.last_name}</p>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold truncate">{user.first_name} {user.last_name}</p>
             <p className="text-xs text-white/50">dr</p>
           </div>
         </div>
@@ -123,7 +129,7 @@ export default function DoctorDashboard() {
               {section && (
                 <p className="text-xs text-white/40 font-semibold uppercase tracking-widest mb-2 px-2 mt-4">{section}</p>
               )}
-              <button onClick={() => setActiveTab(id)}
+              <button onClick={() => { setActiveTab(id); setSidebarOpen(false); }}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-left w-full
                   ${activeTab === id ? 'bg-[#2A9D8F]/20 text-[#2A9D8F]' : 'text-white/60 hover:bg-white/5'}`}>
                 <span>{icon}</span> {label}
@@ -141,7 +147,18 @@ export default function DoctorDashboard() {
       </aside>
 
       {/* MAIN */}
-      <main className="ml-56 flex-1 p-8">
+      <main className="flex-1 md:ml-56 flex flex-col">
+
+        {/* TOPBAR mobilny */}
+        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-[#1A2E25] sticky top-0 z-30">
+          <button onClick={() => setSidebarOpen(true)} className="text-2xl text-white/70 leading-none">☰</button>
+          <span className="font-bold text-white">Medi<span className="text-[#2A9D8F]">Book</span></span>
+          <div className="w-8 h-8 rounded-full bg-[#2A9D8F] text-white flex items-center justify-center text-xs font-bold">
+            {user.first_name?.[0]}{user.last_name?.[0]}
+          </div>
+        </div>
+
+        <div className="p-4 md:p-8">
 
         {/* PULPIT */}
         {activeTab === 'pulpit' && (
@@ -159,12 +176,12 @@ export default function DoctorDashboard() {
               </button>
             </div>
 
-            <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               {[
                 { label: 'Dziś', value: todaySlots.length, sub: 'slotów zaplanowanych', color: 'text-gray-900' },
                 { label: 'Sloty razem', value: slots.length, sub: 'wszystkich slotów', color: 'text-gray-900' },
                 { label: 'Wolne sloty', value: slots.filter(s => s.is_available).length, sub: 'dostępnych', color: 'text-green-600' },
-                { label: 'Usługi', value: services.length, sub: 'aktywnych usług', color: 'text-gray-900' },
+                { label: 'Rezerwacje', value: appointments.filter(a => a.status === 'pending' || a.status === 'confirmed').length, sub: 'aktywnych wizyt', color: 'text-gray-900' },
               ].map(({ label, value, sub, color }, i) => (
                 <div key={label} ref={el => cardsRef.current[i] = el}
                   className="card-animate hover-lift bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
@@ -175,10 +192,9 @@ export default function DoctorDashboard() {
               ))}
             </div>
 
-            {/* Sloty dziś */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div ref={el => cardsRef.current[4] = el} className="card-animate bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                <h2 className="font-bold text-gray-900 mb-4">Sloty - dziś</h2>
+                <h2 className="font-bold text-gray-900 mb-4">Sloty — dziś</h2>
                 {todaySlots.length === 0 ? (
                   <p className="text-sm text-gray-400 text-center py-4">Brak slotów na dziś</p>
                 ) : (
@@ -212,6 +228,50 @@ export default function DoctorDashboard() {
                   ))}
                 </div>
               </div>
+            </div>
+          </>
+        )}
+
+        {/* REZERWACJE */}
+        {activeTab === 'rezerwacje' && (
+          <>
+            <div className="mb-8">
+              <h1 className="text-2xl font-bold text-gray-900">Rezerwacje</h1>
+              <p className="text-sm text-gray-400 mt-1">Wizyty umówione przez pacjentów</p>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+              {loading ? <p className="text-sm text-gray-400 p-8">Ładowanie...</p> :
+                appointments.length === 0 ? (
+                  <p className="text-sm text-gray-400 p-8 text-center">Brak rezerwacji</p>
+                ) : (
+                  <table className="w-full">
+                    <thead>
+                      <tr className="text-xs text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                        <th className="text-left p-4">Pacjent</th>
+                        <th className="text-left p-4">Data</th>
+                        <th className="text-left p-4">Godzina</th>
+                        <th className="text-left p-4">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {appointments.map(a => (
+                        <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50">
+                          <td className="p-4">
+                            <p className="text-sm font-medium text-gray-900">{a.patient_first_name} {a.patient_last_name}</p>
+                            <p className="text-xs text-gray-400">{a.patient_email}</p>
+                          </td>
+                          <td className="p-4 text-sm text-gray-700">{new Date(a.slot_date).toLocaleDateString('pl-PL')}</td>
+                          <td className="p-4 text-sm text-gray-700">{a.start_time?.slice(0,5)} - {a.end_time?.slice(0,5)}</td>
+                          <td className="p-4">
+                            <span className={`text-xs px-2 py-1 rounded-full ${statusLabel[a.status]?.color}`}>
+                              {statusLabel[a.status]?.text}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
             </div>
           </>
         )}
@@ -275,7 +335,7 @@ export default function DoctorDashboard() {
                         <th className="text-left p-4">Data</th>
                         <th className="text-left p-4">Godzina</th>
                         <th className="text-left p-4">Status</th>
-						<th className="text-left p-4">Akcje</th>
+                        <th className="text-left p-4">Akcje</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -288,14 +348,14 @@ export default function DoctorDashboard() {
                               {s.is_available ? 'Wolny' : 'Zajęty'}
                             </span>
                           </td>
-						  <td className="p-4">
-							{s.is_available && (
-								<button onClick={() => deleteSlot(s.id)}
-								className="text-xs text-red-400 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition">
-								Usuń
-								</button>
-							)}
-							</td>
+                          <td className="p-4">
+                            {s.is_available && (
+                              <button onClick={() => deleteSlot(s.id)}
+                                className="text-xs text-red-400 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition">
+                                Usuń
+                              </button>
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -337,55 +397,44 @@ export default function DoctorDashboard() {
           </>
         )}
 
-        {/* REZERWACJE */}
-        {activeTab === 'rezerwacje' && (
-          <>
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold text-gray-900">Rezerwacje</h1>
-              <p className="text-sm text-gray-400 mt-1">Zajęte sloty to rezerwacje pacjentów</p>
-            </div>
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-              {slots.filter(s => !s.is_available).length === 0 ? (
-                <p className="text-sm text-gray-400 p-8 text-center">Brak rezerwacji</p>
-              ) : (
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-xs text-gray-400 uppercase tracking-wider border-b border-gray-100">
-                      <th className="text-left p-4">Data</th>
-                      <th className="text-left p-4">Godzina</th>
-                      <th className="text-left p-4">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {slots.filter(s => !s.is_available).map(s => (
-                      <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50">
-                        <td className="p-4 text-sm text-gray-700">{new Date(s.slot_date).toLocaleDateString('pl-PL')}</td>
-                        <td className="p-4 text-sm text-gray-700">{s.start_time?.slice(0,5)} - {s.end_time?.slice(0,5)}</td>
-                        <td className="p-4">
-                          <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">Zarezerwowany</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </>
-        )}
-
         {/* PACJENCI */}
         {activeTab === 'pacjenci' && (
           <>
             <div className="mb-8">
               <h1 className="text-2xl font-bold text-gray-900">Pacjenci</h1>
-              <p className="text-sm text-gray-400 mt-1">Lista zarejestrowanych pacjentów</p>
+              <p className="text-sm text-gray-400 mt-1">Pacjenci którzy umówili wizyty</p>
             </div>
-            <div className="bg-white rounded-2xl p-8 border border-dashed border-gray-200 text-center text-sm text-gray-400">
-              Lista pacjentów dostępna wkrótce
-            </div>
+            {loading ? <p className="text-sm text-gray-400">Ładowanie...</p> :
+              appointments.length === 0 ? (
+                <div className="bg-white rounded-2xl p-8 border border-dashed border-gray-200 text-center text-sm text-gray-400">
+                  Brak pacjentów
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="text-xs text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                        <th className="text-left p-4">Pacjent</th>
+                        <th className="text-left p-4">Email</th>
+                        <th className="text-left p-4">Ostatnia wizyta</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Array.from(new Map(appointments.map(a => [a.patient_email, a])).values()).map(a => (
+                        <tr key={a.patient_email} className="border-b border-gray-50 hover:bg-gray-50">
+                          <td className="p-4 text-sm font-medium text-gray-900">{a.patient_first_name} {a.patient_last_name}</td>
+                          <td className="p-4 text-sm text-gray-500">{a.patient_email}</td>
+                          <td className="p-4 text-sm text-gray-500">{new Date(a.slot_date).toLocaleDateString('pl-PL')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
           </>
         )}
 
+        </div>
       </main>
     </div>
   );

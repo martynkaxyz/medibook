@@ -15,17 +15,17 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['patient']}>
             <PatientDashboard />
           </ProtectedRoute>
         } />
         <Route path="/doctor" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['doctor']}>
             <DoctorDashboard />
           </ProtectedRoute>
         } />
         <Route path="/admin" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['admin']}>
             <AdminPanel />
           </ProtectedRoute>
         } />

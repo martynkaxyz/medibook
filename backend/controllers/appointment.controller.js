@@ -58,4 +58,15 @@ const cancelAppointment = async (req, res) => {
   }
 };
 
-module.exports = { getMyAppointments, createAppointment, cancelAppointment };
+// Pobierz wizyty pacjentów dla zalogowanego lekarza
+const getDoctorAppointments = async (req, res) => {
+  try {
+    const appointments = await AppointmentModel.getByDoctor(req.user.id);
+    res.json(appointments);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Blad serwera' });
+  }
+};
+
+module.exports = { getMyAppointments, getDoctorAppointments, createAppointment, cancelAppointment };

@@ -9,6 +9,8 @@ export default function AdminPanel() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('pulpit');
+  const [roleFilter, setRoleFilter] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const cardsRef = useRef([]);
 
   useEffect(() => { fetchData(); }, []);
@@ -148,23 +150,34 @@ export default function AdminPanel() {
         .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(42,157,143,0.12); }
       `}</style>
 
+      {/* Overlay mobilny */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/30 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* SIDEBAR */}
-      <aside className="w-56 bg-white border-r border-gray-100 flex flex-col py-8 px-4 fixed h-full">
-        <span className="text-xl font-bold mb-8 px-2">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-56 bg-white border-r border-gray-100 flex flex-col py-8 px-4
+        transform transition-transform duration-300
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+        <span className="text-xl font-bold mb-4 px-2">
           Medi<span className="text-[#2A9D8F]">Book</span>
         </span>
+        <button onClick={() => navigate('/')}
+          className="text-xs text-gray-400 hover:text-[#2A9D8F] transition px-2 mb-4 text-left">
+          ← Strona główna
+        </button>
         <div className="flex items-center gap-3 mb-8 px-2">
-          <div className="w-10 h-10 rounded-full bg-[#2A9D8F] text-white flex items-center justify-center font-bold text-sm">
+          <div className="w-10 h-10 rounded-full bg-[#2A9D8F] text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
             {user.first_name?.[0]}{user.last_name?.[0]}
           </div>
-          <div>
-            <p className="text-sm font-semibold text-gray-800">{user.first_name} {user.last_name}</p>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-800 truncate">{user.first_name} {user.last_name}</p>
             <p className="text-xs text-gray-400">Administrator</p>
           </div>
         </div>
         <nav className="flex flex-col gap-1">
           {tabs.map(({ id, label, icon }) => (
-            <button key={id} onClick={() => setActiveTab(id)}
+            <button key={id} onClick={() => { setActiveTab(id); setSidebarOpen(false); }}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-left
                 ${activeTab === id ? 'bg-[#2A9D8F]/10 text-[#2A9D8F]' : 'text-gray-500 hover:bg-gray-50'}`}>
               <span>{icon}</span> {label}
@@ -180,7 +193,18 @@ export default function AdminPanel() {
       </aside>
 
       {/* MAIN */}
-      <main className="ml-56 flex-1 p-8">
+      <main className="flex-1 md:ml-56 flex flex-col">
+
+        {/* TOPBAR mobilny */}
+        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-gray-100 sticky top-0 z-30">
+          <button onClick={() => setSidebarOpen(true)} className="text-2xl text-gray-600 leading-none">☰</button>
+          <span className="font-bold text-gray-900">Medi<span className="text-[#2A9D8F]">Book</span></span>
+          <div className="w-8 h-8 rounded-full bg-[#2A9D8F] text-white flex items-center justify-center text-xs font-bold">
+            {user.first_name?.[0]}{user.last_name?.[0]}
+          </div>
+        </div>
+
+        <div className="p-4 md:p-8">
 
         {/* PULPIT */}
         {activeTab === 'pulpit' && (
@@ -192,7 +216,7 @@ export default function AdminPanel() {
               </p>
             </div>
             {stats && (
-              <div className="grid grid-cols-4 gap-4 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 {[
                   { label: 'Użytkownicy', value: stats.total_users, color: 'text-gray-900' },
                   { label: 'Wszystkie wizyty', value: stats.total_appointments, color: 'text-gray-900' },
@@ -225,7 +249,8 @@ export default function AdminPanel() {
                 <p className="text-sm text-gray-400 mt-1">Zarządzaj kontami użytkowników</p>
               </div>
               <div className="flex gap-3">
-                <select onChange={e => {}} className="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-[#2A9D8F]">
+                <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)}
+                  className="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-[#2A9D8F]">
                   <option value="">Wszystkie role</option>
                   <option value="patient">Pacjenci</option>
                   <option value="doctor">Lekarze</option>
@@ -233,7 +258,7 @@ export default function AdminPanel() {
                 </select>
               </div>
             </div>
-            <UsersTable filteredUsers={users} />
+            <UsersTable filteredUsers={roleFilter ? users.filter(u => u.role === roleFilter) : users} />
           </>
         )}
 
@@ -268,6 +293,8 @@ export default function AdminPanel() {
             )}
           </>
         )}
+
+        </div>
       </main>
     </div>
   );
