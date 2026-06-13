@@ -25,8 +25,6 @@ export default function PatientDashboard() {
   // Filtry wizyt
   const [filterStatus, setFilterStatus] = useState('');
   const [filterMonth, setFilterMonth] = useState('');
-  const [appliedStatus, setAppliedStatus] = useState('');
-  const [appliedMonth, setAppliedMonth] = useState('');
 
   // Profil – edycja
   const [profileForm, setProfileForm] = useState({ first_name: user.first_name || '', last_name: user.last_name || '' });
@@ -128,16 +126,9 @@ export default function PatientDashboard() {
     .sort((a, b) => new Date(a.slot_date) - new Date(b.slot_date));
   const history = appointments.filter(a => ['cancelled', 'completed'].includes(a.status));
 
-  const handleSearch = () => {
-    setAppliedStatus(filterStatus);
-    setAppliedMonth(filterMonth);
-  };
-
   const handleClear = () => {
     setFilterStatus('');
     setFilterMonth('');
-    setAppliedStatus('');
-    setAppliedMonth('');
   };
 
   const getSlotMonth = (slot_date) => {
@@ -148,8 +139,8 @@ export default function PatientDashboard() {
 
   const applyFilters = (list) => {
     return list.filter(a => {
-      const matchStatus = !appliedStatus || a.status === appliedStatus;
-      const matchMonth = !appliedMonth || getSlotMonth(a.slot_date) === appliedMonth;
+      const matchStatus = !filterStatus || a.status === filterStatus;
+      const matchMonth = !filterMonth || getSlotMonth(a.slot_date) === filterMonth;
       return matchStatus && matchMonth;
     });
   };
@@ -372,16 +363,12 @@ export default function PatientDashboard() {
                   <input type="month" value={filterMonth} onChange={e => setFilterMonth(e.target.value)}
                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#2A9D8F]" />
                 </div>
-                <button onClick={handleSearch}
-                  className="bg-[#2A9D8F] text-white text-sm font-semibold px-5 py-2 rounded-xl hover:bg-[#1A7A6E] transition whitespace-nowrap">
-                  Szukaj
-                </button>
                 <button onClick={handleClear}
                   className="text-sm text-gray-400 border border-gray-200 px-4 py-2 rounded-xl hover:border-gray-300 transition whitespace-nowrap">
                   Wyczyść
                 </button>
                 <button onClick={() => navigate('/booking')}
-                  className="bg-gray-900 text-white text-sm font-semibold px-5 py-2 rounded-xl hover:bg-gray-700 transition whitespace-nowrap">
+                  className="bg-[#2A9D8F] text-white text-sm font-semibold px-5 py-2 rounded-xl hover:bg-[#1A7A6E] transition whitespace-nowrap">
                   + Nowa wizyta
                 </button>
               </div>
@@ -390,13 +377,7 @@ export default function PatientDashboard() {
                 <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-2xl mb-4">{cancelError}</div>
               )}
 
-              {appointments.length > 0 && (
-                <p className="text-xs text-gray-400 mb-3">
-                  Twoje miesiące: {[...new Set(appointments.map(a => getSlotMonth(a.slot_date)))].sort().join(', ')}
-                </p>
-              )}
-
-              {loading ? <p className="text-sm text-gray-400">Ładowanie...</p> : (() => {
+{loading ? <p className="text-sm text-gray-400">Ładowanie...</p> : (() => {
                 const filtered = applyFilters(appointments);
                 return filtered.length === 0 ? (
                   <div className="bg-white rounded-2xl p-8 border border-dashed border-gray-200 text-center text-sm text-gray-400">
@@ -441,10 +422,6 @@ export default function PatientDashboard() {
                   <input type="month" value={filterMonth} onChange={e => setFilterMonth(e.target.value)}
                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#2A9D8F]" />
                 </div>
-                <button onClick={handleSearch}
-                  className="bg-[#2A9D8F] text-white text-sm font-semibold px-5 py-2 rounded-xl hover:bg-[#1A7A6E] transition whitespace-nowrap">
-                  Szukaj
-                </button>
                 <button onClick={handleClear}
                   className="text-sm text-gray-400 border border-gray-200 px-4 py-2 rounded-xl hover:border-gray-300 transition whitespace-nowrap">
                   Wyczyść
