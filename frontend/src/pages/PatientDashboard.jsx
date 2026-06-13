@@ -140,11 +140,16 @@ export default function PatientDashboard() {
     setAppliedMonth('');
   };
 
+  const getSlotMonth = (slot_date) => {
+    if (!slot_date) return '';
+    const d = new Date(slot_date);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  };
+
   const applyFilters = (list) => {
     return list.filter(a => {
       const matchStatus = !appliedStatus || a.status === appliedStatus;
-      const slotMonth = a.slot_date ? new Date(a.slot_date).toLocaleDateString('en-CA').substring(0, 7) : '';
-      const matchMonth = !appliedMonth || slotMonth === appliedMonth;
+      const matchMonth = !appliedMonth || getSlotMonth(a.slot_date) === appliedMonth;
       return matchStatus && matchMonth;
     });
   };
@@ -385,7 +390,13 @@ export default function PatientDashboard() {
                 <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-2xl mb-4">{cancelError}</div>
               )}
 
-{loading ? <p className="text-sm text-gray-400">Ładowanie...</p> : (() => {
+              {appointments.length > 0 && (
+                <p className="text-xs text-gray-400 mb-3">
+                  Twoje miesiące: {[...new Set(appointments.map(a => getSlotMonth(a.slot_date)))].sort().join(', ')}
+                </p>
+              )}
+
+              {loading ? <p className="text-sm text-gray-400">Ładowanie...</p> : (() => {
                 const filtered = applyFilters(appointments);
                 return filtered.length === 0 ? (
                   <div className="bg-white rounded-2xl p-8 border border-dashed border-gray-200 text-center text-sm text-gray-400">
