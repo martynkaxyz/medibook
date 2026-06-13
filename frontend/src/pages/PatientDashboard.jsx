@@ -143,7 +143,7 @@ export default function PatientDashboard() {
   const applyFilters = (list) => {
     return list.filter(a => {
       const matchStatus = !appliedStatus || a.status === appliedStatus;
-      const slotMonth = a.slot_date ? new Date(a.slot_date).toISOString().substring(0, 7) : '';
+      const slotMonth = a.slot_date ? String(a.slot_date).substring(0, 7) : '';
       const matchMonth = !appliedMonth || slotMonth === appliedMonth;
       return matchStatus && matchMonth;
     });
