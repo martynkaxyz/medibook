@@ -2,6 +2,16 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
+function InputField({ label, type = 'text', value, onChange }) {
+  return (
+    <div>
+      <label className="text-xs text-gray-400 mb-1 block">{label}</label>
+      <input type={type} value={value} onChange={onChange}
+        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2A9D8F] bg-gray-50 focus:bg-white transition" />
+    </div>
+  );
+}
+
 export default function PatientDashboard() {
   const navigate = useNavigate();
   const cardsRef = useRef([]);
@@ -14,7 +24,7 @@ export default function PatientDashboard() {
 
   // Filtry wizyt
   const [filterStatus, setFilterStatus] = useState('');
-  const [filterDate, setFilterDate] = useState('');
+  const [filterMonth, setFilterMonth] = useState('');
 
   // Profil – edycja
   const [profileForm, setProfileForm] = useState({ first_name: user.first_name || '', last_name: user.last_name || '' });
@@ -119,8 +129,8 @@ export default function PatientDashboard() {
   const applyFilters = (list) => {
     return list.filter(a => {
       const matchStatus = !filterStatus || a.status === filterStatus;
-      const matchDate = !filterDate || a.slot_date?.startsWith(filterDate);
-      return matchStatus && matchDate;
+      const matchMonth = !filterMonth || a.slot_date?.startsWith(filterMonth);
+      return matchStatus && matchMonth;
     });
   };
 
@@ -164,13 +174,6 @@ export default function PatientDashboard() {
     </div>
   );
 
-  const InputField = ({ label, type = 'text', value, onChange }) => (
-    <div>
-      <label className="text-xs text-gray-400 mb-1 block">{label}</label>
-      <input type={type} value={value} onChange={onChange}
-        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2A9D8F] bg-gray-50 focus:bg-white transition" />
-    </div>
-  );
 
   const tabs = [
     { id: 'pulpit',   label: 'Pulpit',       icon: '▣' },
@@ -345,11 +348,11 @@ export default function PatientDashboard() {
                   </select>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <label className="text-xs text-gray-400 mb-1 block">Data</label>
-                  <input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)}
+                  <label className="text-xs text-gray-400 mb-1 block">Miesiąc</label>
+                  <input type="month" value={filterMonth} onChange={e => setFilterMonth(e.target.value)}
                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#2A9D8F]" />
                 </div>
-                <button onClick={() => { setFilterStatus(''); setFilterDate(''); }}
+                <button onClick={() => { setFilterStatus(''); setFilterMonth(''); }}
                   className="text-sm text-gray-400 border border-gray-200 px-4 py-2 rounded-xl hover:border-gray-300 transition whitespace-nowrap">
                   Wyczyść
                 </button>
@@ -404,11 +407,11 @@ export default function PatientDashboard() {
                   </select>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <label className="text-xs text-gray-400 mb-1 block">Data</label>
-                  <input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)}
+                  <label className="text-xs text-gray-400 mb-1 block">Miesiąc</label>
+                  <input type="month" value={filterMonth} onChange={e => setFilterMonth(e.target.value)}
                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#2A9D8F]" />
                 </div>
-                <button onClick={() => { setFilterStatus(''); setFilterDate(''); }}
+                <button onClick={() => { setFilterStatus(''); setFilterMonth(''); }}
                   className="text-sm text-gray-400 border border-gray-200 px-4 py-2 rounded-xl hover:border-gray-300 transition whitespace-nowrap">
                   Wyczyść
                 </button>
