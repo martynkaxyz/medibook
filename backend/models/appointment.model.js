@@ -2,7 +2,16 @@ const pool = require('../config/db');
 
 // Pobierz wizyty pacjenta z filtrowaniem i paginacja
 const getByPatient = async (patientId, { status, date, page = 1, limit = 10 }) => {
-  let query = 'SELECT a.*, ts.slot_date, ts.start_time, ts.end_time, u.first_name as doctor_first_name, u.last_name as doctor_last_name FROM appointments a JOIN time_slots ts ON a.slot_id = ts.id JOIN doctors d ON ts.doctor_id = d.id JOIN users u ON d.user_id = u.id WHERE a.patient_id = $1';
+  let query = `SELECT a.*, ts.slot_date, ts.start_time, ts.end_time,
+    u.first_name as doctor_first_name, u.last_name as doctor_last_name,
+    s.name as service_name
+    FROM appointments a
+    JOIN time_slots ts ON a.slot_id = ts.id
+    JOIN doctors d ON ts.doctor_id = d.id
+    JOIN users u ON d.user_id = u.id
+    LEFT JOIN appointment_services aps ON aps.appointment_id = a.id
+    LEFT JOIN services s ON s.id = aps.service_id
+    WHERE a.patient_id = $1`;
   const params = [patientId];
   let idx = 2;
 
@@ -101,11 +110,14 @@ const getByDoctor = async (doctorUserId) => {
   const result = await pool.query(
     `SELECT a.*, ts.slot_date, ts.start_time, ts.end_time,
             u.first_name AS patient_first_name, u.last_name AS patient_last_name,
-            u.email AS patient_email
+            u.email AS patient_email,
+            s.name AS service_name
      FROM appointments a
      JOIN time_slots ts ON a.slot_id = ts.id
      JOIN doctors d ON ts.doctor_id = d.id
      JOIN users u ON a.patient_id = u.id
+     LEFT JOIN appointment_services aps ON aps.appointment_id = a.id
+     LEFT JOIN services s ON s.id = aps.service_id
      WHERE d.user_id = $1
      ORDER BY ts.slot_date DESC, ts.start_time DESC`,
     [doctorUserId]

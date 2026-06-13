@@ -12,6 +12,45 @@ function InputField({ label, type = 'text', value, onChange }) {
   );
 }
 
+const STATUS_LABEL = {
+  pending:   { text: 'Oczekująca',   color: 'bg-yellow-100 text-yellow-700' },
+  confirmed: { text: 'Potwierdzona', color: 'bg-green-100 text-green-700' },
+  cancelled: { text: 'Odwołana',     color: 'bg-red-100 text-red-600' },
+  completed: { text: 'Odbyta',       color: 'bg-gray-100 text-gray-600' },
+};
+
+function AppointmentCard({ a, showCancel, showRebook, cardRef, onCancel, onRebook }) {
+  const monthName = new Date(a.slot_date).toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase();
+  return (
+    <div ref={cardRef}
+      className="card-animate hover-lift bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100">
+      <div className="w-12 text-center flex-shrink-0">
+        <p className="text-lg font-bold text-gray-900">{new Date(a.slot_date).getDate()}</p>
+        <p className="text-xs text-gray-400">{monthName}</p>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-semibold text-gray-900 text-sm truncate">{a.service_name || 'Wizyta'}</p>
+        <p className="text-xs text-gray-400">dr {a.doctor_first_name} {a.doctor_last_name} · {a.start_time?.slice(0,5)} - {a.end_time?.slice(0,5)}</p>
+        <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${STATUS_LABEL[a.status]?.color}`}>
+          {STATUS_LABEL[a.status]?.text}
+        </span>
+      </div>
+      {showCancel && (
+        <button onClick={onCancel}
+          className="text-xs text-gray-400 border border-gray-200 px-3 py-1.5 rounded-lg hover:border-red-300 hover:text-red-500 transition flex-shrink-0">
+          Odwołaj
+        </button>
+      )}
+      {showRebook && (
+        <button onClick={onRebook}
+          className="text-xs bg-[#2A9D8F] text-white px-3 py-1.5 rounded-lg hover:bg-[#1A7A6E] transition flex-shrink-0">
+          Umów ponownie
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function PatientDashboard() {
   const navigate = useNavigate();
   const cardsRef = useRef([]);
@@ -124,45 +163,7 @@ export default function PatientDashboard() {
   const history = appointments.filter(a => ['cancelled', 'completed'].includes(a.status));
 
 
-  const statusLabel = {
-    pending:   { text: 'Oczekująca',  color: 'bg-yellow-100 text-yellow-700' },
-    confirmed: { text: 'Potwierdzona', color: 'bg-green-100 text-green-700' },
-    cancelled: { text: 'Odwołana',    color: 'bg-red-100 text-red-600' },
-    completed: { text: 'Odbyta',      color: 'bg-gray-100 text-gray-600' },
-  };
-
-  const monthName = (dateStr) => new Date(dateStr).toLocaleDateString('pl-PL', { month: 'short' }).toUpperCase();
   const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' });
-
-  const AppointmentCard = ({ a, i, showCancel = false, showRebook = false, refIndex }) => (
-    <div key={a.id}
-      ref={el => cardsRef.current[refIndex] = el}
-      className="card-animate hover-lift bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100">
-      <div className="w-12 text-center flex-shrink-0">
-        <p className="text-lg font-bold text-gray-900">{new Date(a.slot_date).getDate()}</p>
-        <p className="text-xs text-gray-400">{monthName(a.slot_date)}</p>
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold text-gray-900 text-sm truncate">{a.service_name || 'Wizyta'}</p>
-        <p className="text-xs text-gray-400">dr {a.doctor_first_name} {a.doctor_last_name} · {a.start_time?.slice(0,5)} - {a.end_time?.slice(0,5)}</p>
-        <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${statusLabel[a.status]?.color}`}>
-          {statusLabel[a.status]?.text}
-        </span>
-      </div>
-      {showCancel && (
-        <button onClick={() => cancelAppointment(a.id)}
-          className="text-xs text-gray-400 border border-gray-200 px-3 py-1.5 rounded-lg hover:border-red-300 hover:text-red-500 transition flex-shrink-0">
-          Odwołaj
-        </button>
-      )}
-      {showRebook && (
-        <button onClick={() => navigate('/booking')}
-          className="text-xs bg-[#2A9D8F] text-white px-3 py-1.5 rounded-lg hover:bg-[#1A7A6E] transition flex-shrink-0">
-          Umów ponownie
-        </button>
-      )}
-    </div>
-  );
 
 
   const tabs = [
@@ -293,7 +294,7 @@ export default function PatientDashboard() {
                   ) : (
                     <div className="flex flex-col gap-3">
                       {upcoming.slice(0, 2).map((a, i) => (
-                        <AppointmentCard key={a.id} a={a} i={i} showCancel refIndex={4 + i} />
+                        <AppointmentCard key={a.id} a={a} showCancel cardRef={el => cardsRef.current[4 + i] = el} onCancel={() => cancelAppointment(a.id)} />
                       ))}
                     </div>
                   )}
@@ -308,7 +309,7 @@ export default function PatientDashboard() {
                 ) : (
                   <div className="flex flex-col gap-3">
                     {history.slice(0, 2).map((a, i) => (
-                      <AppointmentCard key={a.id} a={a} i={i} showRebook refIndex={6 + i} />
+                      <AppointmentCard key={a.id} a={a} showRebook cardRef={el => cardsRef.current[6 + i] = el} onRebook={() => navigate('/booking')} />
                     ))}
                   </div>
                 )}
@@ -347,7 +348,7 @@ export default function PatientDashboard() {
                 ) : (
                   <div className="flex flex-col gap-3">
                     {upcoming.map((a, i) => (
-                      <AppointmentCard key={a.id} a={a} i={i} showCancel refIndex={i} />
+                      <AppointmentCard key={a.id} a={a} showCancel cardRef={el => cardsRef.current[i] = el} onCancel={() => cancelAppointment(a.id)} />
                     ))}
                   </div>
                 )}
@@ -369,7 +370,7 @@ export default function PatientDashboard() {
               ) : (
                 <div className="flex flex-col gap-3">
                   {history.map((a, i) => (
-                    <AppointmentCard key={a.id} a={a} i={i} showRebook refIndex={i} />
+                    <AppointmentCard key={a.id} a={a} showRebook cardRef={el => cardsRef.current[i] = el} onRebook={() => navigate('/booking')} />
                   ))}
                 </div>
               )}
