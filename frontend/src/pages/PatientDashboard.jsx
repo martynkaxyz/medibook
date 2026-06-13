@@ -60,9 +60,6 @@ export default function PatientDashboard() {
     try {
       const res = await api.get('/appointments');
       setAppointments(res.data);
-      if (res.data.length > 0) {
-        console.log('slot_date sample:', res.data[0].slot_date, typeof res.data[0].slot_date);
-      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -146,7 +143,7 @@ export default function PatientDashboard() {
   const applyFilters = (list) => {
     return list.filter(a => {
       const matchStatus = !appliedStatus || a.status === appliedStatus;
-      const slotMonth = a.slot_date ? String(a.slot_date).substring(0, 7) : '';
+      const slotMonth = a.slot_date ? new Date(a.slot_date).toLocaleDateString('en-CA').substring(0, 7) : '';
       const matchMonth = !appliedMonth || slotMonth === appliedMonth;
       return matchStatus && matchMonth;
     });
@@ -388,13 +385,8 @@ export default function PatientDashboard() {
                 <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-2xl mb-4">{cancelError}</div>
               )}
 
-              {/* DEBUG - usunac po naprawieniu */}
-              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs px-4 py-2 rounded-xl mb-4 font-mono">
-                DEBUG | appointments: <b>{appointments.length}</b> | upcoming: <b>{upcoming.length}</b> | appliedMonth: <b>"{appliedMonth}"</b> | slot_date[0]: <b>{String(appointments[0]?.slot_date)}</b>
-              </div>
-
-              {loading ? <p className="text-sm text-gray-400">Ładowanie...</p> : (() => {
-                const filtered = applyFilters(upcoming);
+{loading ? <p className="text-sm text-gray-400">Ładowanie...</p> : (() => {
+                const filtered = applyFilters(appointments);
                 return filtered.length === 0 ? (
                   <div className="bg-white rounded-2xl p-8 border border-dashed border-gray-200 text-center text-sm text-gray-400">
                     <p className="mb-4">Brak wizyt spełniających kryteria</p>
