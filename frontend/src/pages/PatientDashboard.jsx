@@ -60,6 +60,9 @@ export default function PatientDashboard() {
     try {
       const res = await api.get('/appointments');
       setAppointments(res.data);
+      if (res.data.length > 0) {
+        console.log('slot_date sample:', res.data[0].slot_date, typeof res.data[0].slot_date);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -383,6 +386,13 @@ export default function PatientDashboard() {
 
               {cancelError && (
                 <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-2xl mb-4">{cancelError}</div>
+              )}
+
+              {/* DEBUG - usunac po naprawieniu */}
+              {appliedMonth && upcoming.length > 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs px-4 py-2 rounded-xl mb-4 font-mono">
+                  szukam: <b>{appliedMonth}</b> | slot_date[0]: <b>{String(upcoming[0]?.slot_date)}</b> | computed: <b>{String(upcoming[0]?.slot_date).substring(0,7)}</b>
+                </div>
               )}
 
               {loading ? <p className="text-sm text-gray-400">Ładowanie...</p> : (() => {
